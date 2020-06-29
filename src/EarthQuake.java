@@ -13,7 +13,6 @@ import javax.swing.JButton;
 
 public class EarthQuake {
 
-	String dateTime;
 	String latitude;
 	String longitude;
 	String depth;
@@ -26,11 +25,12 @@ public class EarthQuake {
 	Point p;
 	Graphics2D g;
 	String data;
+	String[] dateTime;
 
 	public EarthQuake(String dateTime, String lat, String lon, String depth, String mag, String loc, Graphics g1,
 			double x, double y) {
 		g = (Graphics2D) g1;
-		this.dateTime = dateTime;
+		this.dateTime = dateTime.split("T");
 		this.latitude = lat;
 		this.longitude = lon;
 		this.depth = depth;
@@ -41,7 +41,7 @@ public class EarthQuake {
 
 		p = new Point((int) x, (int) y);
 		StringBuilder sb = new StringBuilder();
-		sb.append("Date / Time: ").append(this.dateTime + " ").append("\nMagnitude: ").append(this.magnitude + " ")
+		sb.append("Date: ").append(this.dateTime[0] + " ").append("\nTime: ").append(this.dateTime[1] +" ").append("\nMagnitude: ").append(this.magnitude + " ")
 				.append("\nDepth: ").append(this.depth + " km").append("\nLocation: ").append(this.location);
 		this.data = sb.toString();
 		

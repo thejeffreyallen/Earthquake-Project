@@ -2,12 +2,14 @@
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
@@ -39,11 +41,15 @@ public class Drawing extends JPanel {
 	public static int width = 1280;
 	public static int height = 1280;
 	String[] s;
+	
 	boolean done;
 	Graphics2D g;
 	static JPanel panel;
 
 	List<EarthQuake> quakes;
+	
+	JOptionPane pane = null;
+	JDialog d = null;
 
 	// Boise, ID 43.6150° N, 116.2023° W
 
@@ -100,7 +106,7 @@ public class Drawing extends JPanel {
 		// https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.csv
 
 		try {
-			data = new URL("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.csv");
+			data = new URL("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.csv");
 		} catch (MalformedURLException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -122,38 +128,21 @@ public class Drawing extends JPanel {
 				double y = mercY(Double.parseDouble(s[1]));
 				double x = mercX(Double.parseDouble(s[2]));
 				EarthQuake q = new EarthQuake(s[0], s[1], s[2], s[3], s[4], s[13], g, x, y);
-				quakes.add(q);
+				CustomShape addBtn = new CustomShape((int) x, (int) y, 15, q);
 
-				
-				JButton addBtn = new CircleButton("");
-				
-				
-				addBtn.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-//						JOptionPane.showMessageDialog(null, q.data, "Earthquake Details",
-//								JOptionPane.INFORMATION_MESSAGE);
-						final JOptionPane pane = new JOptionPane(q.data);
-					    final JDialog d = pane.createDialog((JFrame)null, "Earthquake Details");
-					    d.setLocation((int) x,(int) y);
-					    d.setVisible(true);
-					}
-				});
 				addBtn.setBounds((int) x, (int) y, 15, 15);
-				addBtn.setBorder(new RoundBorder((int) Double.parseDouble(s[2]))); // 10 is the radius
-//				addBtn.setForeground(Color.BLUE);
-//				addBtn.setBackground(Color.RED);
 				double size = 0;
 				if (q.magnitude.length() == 0)
 					q.magnitude += ".0";
 				size = Double.parseDouble(q.magnitude) * 3;
 				if (size > 15)
-					((CircleButton) addBtn).buttonColor(new Color(255, 0, 0, 200));
+					addBtn.setColor(new Color(255, 0, 0, 200));
 				else if (size > 10 && size <= 15)
-					((CircleButton) addBtn).buttonColor(new Color(255, 165, 0, 200));
+					addBtn.setColor(new Color(255, 165, 0, 200));
 				else if (size > 5 && size <= 10)
-					((CircleButton) addBtn).buttonColor(new Color(255, 255, 0, 200));
+					addBtn.setColor(new Color(255, 255, 0, 200));
 				else
-					((CircleButton) addBtn).buttonColor(new Color(0, 255, 0, 200));
+					addBtn.setColor(new Color(0, 255, 0, 200));
 				panel.add(addBtn);
 			}
 		} catch (IOException e) {
