@@ -6,6 +6,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
@@ -20,7 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -36,22 +41,22 @@ public class Drawing extends JPanel {
 	String[] s;
 	boolean done;
 	Graphics2D g;
-	
+	static JPanel panel;
+
 	List<EarthQuake> quakes;
-	
+
 	// Boise, ID 43.6150° N, 116.2023° W
 
 	double lat = -116.2023;
 	double lon = 43.6150;
 
 	public static void main(String[] args) {
-		
-		JPanel panel = new Drawing();
-		JScrollPane scrollBar = new JScrollPane(panel,
-	            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-	            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+
+		panel = new Drawing();
+		JScrollPane scrollBar = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		frame = new JFrame("Earthquake Map");
-		//Canvas canvas = new Drawing();
+		// Canvas canvas = new Drawing();
 		frame.setPreferredSize(new Dimension(width, height));
 		frame.add(scrollBar);
 		frame.pack();
@@ -88,14 +93,14 @@ public class Drawing extends JPanel {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		g.drawImage(img, 0, 0, null);
-		
+
 		// https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.csv
 		// https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.csv
 
 		try {
-			data = new URL("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.csv");
+			data = new URL("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.csv");
 		} catch (MalformedURLException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -106,7 +111,7 @@ public class Drawing extends JPanel {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		String inputLine;
 
 		try {
@@ -118,7 +123,38 @@ public class Drawing extends JPanel {
 				double x = mercX(Double.parseDouble(s[2]));
 				EarthQuake q = new EarthQuake(s[0], s[1], s[2], s[3], s[4], s[13], g, x, y);
 				quakes.add(q);
-				addMouseListener(q);
+
+				
+				JButton addBtn = new CircleButton("");
+				
+				
+				addBtn.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+//						JOptionPane.showMessageDialog(null, q.data, "Earthquake Details",
+//								JOptionPane.INFORMATION_MESSAGE);
+						final JOptionPane pane = new JOptionPane(q.data);
+					    final JDialog d = pane.createDialog((JFrame)null, "Earthquake Details");
+					    d.setLocation((int) x,(int) y);
+					    d.setVisible(true);
+					}
+				});
+				addBtn.setBounds((int) x, (int) y, 15, 15);
+				addBtn.setBorder(new RoundBorder((int) Double.parseDouble(s[2]))); // 10 is the radius
+//				addBtn.setForeground(Color.BLUE);
+//				addBtn.setBackground(Color.RED);
+				double size = 0;
+				if (q.magnitude.length() == 0)
+					q.magnitude += ".0";
+				size = Double.parseDouble(q.magnitude) * 3;
+				if (size > 15)
+					((CircleButton) addBtn).buttonColor(new Color(255, 0, 0, 200));
+				else if (size > 10 && size <= 15)
+					((CircleButton) addBtn).buttonColor(new Color(255, 165, 0, 200));
+				else if (size > 5 && size <= 10)
+					((CircleButton) addBtn).buttonColor(new Color(255, 255, 0, 200));
+				else
+					((CircleButton) addBtn).buttonColor(new Color(0, 255, 0, 200));
+				panel.add(addBtn);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -131,102 +167,7 @@ public class Drawing extends JPanel {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
+
 	}
-
-	public class EarthQuake implements MouseListener{
-
-		String dateTime;
-		String latitude;
-		String longitude;
-		String depth;
-		String magnitude;
-		String location;
-		List<Shape> circle = new ArrayList<Shape>();
-		String msg;
-		double x;
-		double y;
-		Point p;
-		Graphics2D g;
-		String data;
-
-		public EarthQuake(String dateTime, String lat, String lon, String depth, String mag, String loc, Graphics g1,
-				double x, double y) {
-			g = (Graphics2D) g1;
-			this.dateTime = dateTime;
-			this.latitude = lat;
-			this.longitude = lon;
-			this.depth = depth;
-			this.magnitude = mag;
-			this.location = loc;
-			this.x = x;
-			this.y = y;
-
-			p = new Point((int) x, (int) y);
-
-			double size = 0;
-			if (mag.length() == 0)
-				mag += ".0";
-			size = Double.parseDouble(mag) * 3;
-			if (size > 20)
-				g.setColor(new Color(255, 0, 0, 255));
-			else if (size > 10 && size <= 20)
-				g.setColor(new Color(255, 165, 0, 200));
-			else if (size > 5 && size <= 10)
-				g.setColor(new Color(255, 255, 0, 200));
-			else
-				g.setColor(new Color(0, 255, 0, 200));
-			Shape s = new Ellipse2D.Double((int) x, (int) y, (int) size, (int) size);
-			g.fill(s);
-			circle.add(s);
-			StringBuilder sb = new StringBuilder();
-			sb.append("Date / Time: ").append(this.dateTime + " ").append("Magnitude: ").append(this.magnitude + " ")
-					.append("Depth: ").append(this.depth + " ").append("Location: ").append(this.location);
-			this.data = sb.toString();
-		}
-
-		public String getData() {
-			return this.data;
-		}
-		
-		@Override
-		public void mouseClicked(MouseEvent e) {
-			for(Shape s : circle)
-			{
-				if(s.contains(e.getPoint()))
-				{
-					System.out.println(data);
-				}
-			}
-		}
-		
-		
-		@Override
-		public void mouseEntered(MouseEvent e) {
-			
-		}
-
-		@Override
-		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void mousePressed(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-		
-	}
-
-	
 
 }
