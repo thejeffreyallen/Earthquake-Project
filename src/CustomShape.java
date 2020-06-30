@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
@@ -28,6 +29,8 @@ public class CustomShape extends JComponent{
 		this.y = y;
 		this.width = diameter;
 		this.height = diameter;
+		
+		setBounds(x, y, diameter, diameter);
 		
 		MouseAdapter mouseListener = new MouseAdapter() {
 
@@ -59,6 +62,11 @@ public class CustomShape extends JComponent{
 	public void setColor(Color col) {
 		this.col = col;
 		this.setBackground(col);
+	}
+	
+	public void setWidth(int width) {
+		this.width = width;
+		this.height = width;
 	}
 	
 	public boolean contains(int x, int y) {

@@ -27,9 +27,8 @@ public class EarthQuake {
 	String data;
 	String[] dateTime;
 
-	public EarthQuake(String dateTime, String lat, String lon, String depth, String mag, String loc, Graphics g1,
+	public EarthQuake(String dateTime, String lat, String lon, String depth, String mag, String loc,
 			double x, double y) {
-		g = (Graphics2D) g1;
 		this.dateTime = dateTime.split("T");
 		this.latitude = lat;
 		this.longitude = lon;

@@ -35,14 +35,14 @@ import javax.swing.JScrollPane;
 public class Drawing extends JPanel {
 
 	private BufferedImage img;
-	BufferedReader in;
-	URL data;
+	static BufferedReader in;
+	static URL data;
 	static JFrame frame;
 	public static int width = 1280;
 	public static int height = 1280;
-	String[] s;
+	static String[] s;
 	
-	boolean done;
+	boolean done = false;
 	Graphics2D g;
 	static JPanel panel;
 
@@ -68,10 +68,10 @@ public class Drawing extends JPanel {
 		frame.pack();
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+		
 	}
 
-	public double mercX(double lat) {
+	public static double mercX(double lat) {
 		lat = lat * (Math.PI / 180);
 		double x = ((width / 2) / (2 * Math.PI));
 		x = x * Math.pow(2, 1);
@@ -79,7 +79,7 @@ public class Drawing extends JPanel {
 		return x;
 	}
 
-	public double mercY(double lon) {
+	public static double mercY(double lon) {
 		lon = lon * (Math.PI / 180);
 		double y = (((height / 2) / (2 * Math.PI)) * Math.pow(2, 1))
 				* (Math.PI - Math.log(Math.tan(Math.PI / 4 + lon / 2)));
@@ -88,6 +88,7 @@ public class Drawing extends JPanel {
 
 	public void paintComponent(Graphics g1) {
 		quakes = new ArrayList<EarthQuake>();
+		
 		g = (Graphics2D) g1;
 		try {
 			img = ImageIO.read(new URL(
@@ -102,11 +103,20 @@ public class Drawing extends JPanel {
 
 		g.drawImage(img, 0, 0, null);
 
+		if(!done)
+			setup();
 		// https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.csv
 		// https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.csv
 
+		
+		draw();
+		
+
+	}
+	
+	public void setup() {
 		try {
-			data = new URL("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.csv");
+			data = new URL("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.csv");
 		} catch (MalformedURLException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -127,23 +137,8 @@ public class Drawing extends JPanel {
 
 				double y = mercY(Double.parseDouble(s[1]));
 				double x = mercX(Double.parseDouble(s[2]));
-				EarthQuake q = new EarthQuake(s[0], s[1], s[2], s[3], s[4], s[13], g, x, y);
-				CustomShape addBtn = new CustomShape((int) x, (int) y, 15, q);
-
-				addBtn.setBounds((int) x, (int) y, 15, 15);
-				double size = 0;
-				if (q.magnitude.length() == 0)
-					q.magnitude += ".0";
-				size = Double.parseDouble(q.magnitude) * 3;
-				if (size > 15)
-					addBtn.setColor(new Color(255, 0, 0, 200));
-				else if (size > 10 && size <= 15)
-					addBtn.setColor(new Color(255, 165, 0, 200));
-				else if (size > 5 && size <= 10)
-					addBtn.setColor(new Color(255, 255, 0, 200));
-				else
-					addBtn.setColor(new Color(0, 255, 0, 200));
-				panel.add(addBtn);
+				EarthQuake q = new EarthQuake(s[0], s[1], s[2], s[3], s[4], s[13], x, y);
+				quakes.add(q);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -156,7 +151,31 @@ public class Drawing extends JPanel {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		done = true;
+	}
+	
+	public void draw() {
+		
+		for(EarthQuake q : quakes)
+		{
+			double size = 0;
+			if (q.magnitude.length() == 0)
+				q.magnitude += ".0";
+			size = Double.parseDouble(q.magnitude) * 3;
+			CustomShape addBtn = new CustomShape((int) q.x, (int) q.y, (int) size, q);
+			//addBtn.setBounds((int) q.x, (int) q.y, (int) size, (int) size);
+			
+			if (size > 15)
+				addBtn.setColor(new Color(255, 0, 0, 200));
+			else if (size > 10 && size <= 15)
+				addBtn.setColor(new Color(255, 165, 0, 200));
+			else if (size > 5 && size <= 10)
+				addBtn.setColor(new Color(255, 255, 0, 200));
+			else
+				addBtn.setColor(new Color(0, 255, 0, 200));
+			panel.add(addBtn);
+			repaint();
+		}
 	}
 
 }
